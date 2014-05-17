@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <body>
+
+        <ui:composition template=".././layout/acmeWorldTemplate.xhtml">
+
+            <ui:define name="content">
+                <f:view>
+                    <h:form id="reportGeneratorForm">
+                        Click on the button below to run the reservation report, and then look at the server log to see the details.
+                        <br/><br/>
+                        <h:outputText id="reservationReportMessage" style="color: green" 
+                                      value="#{parkReservationController.reservationReportMessage}"/>
+                        <br/><br/>
+
+                        <p:panel header="Recipe 1: Managed Task">
+                            <p:commandButton id="reservationReport" action="#{parkReservationController.runReservationReport()}"
+                                             value="Run Reservation Report">
+                                <f:ajax execute="@this" render="reservationReportMessage"/>
+                            </p:commandButton>
+
+                        </p:panel>
+                        <p:panel header="Recipe 2: Many Managed Tasks">
+                            <p:commandButton id="reservationManyReport" action="#{parkReservationController.runManyReservationReports()}"
+                                             value="Run Many Reservation Reports">
+                                <f:ajax execute="@this"/>
+                            </p:commandButton>
+                            <br/><br/>
+
+                            <p:commandButton id="reservationAnyReport" action="#{parkReservationController.runAnyReservationReport()}"
+                                             value="Run Any Reservation Report">
+                                <f:ajax execute="@this" />
+                            </p:commandButton>
+                        </p:panel>
+
+                        <p:panel header="Recipe 3 - Merge Content of Many Managed Tasks">
+                                 <h:outputText id="emailReservationSummaryReportMessage" style="color: green" 
+                                      value="#{acmeSummaryEmailController.emailSummaryReportMessage}"/>
+
+                            <p:commandButton id="emailReservationSummaryReport" action="#{acmeSummaryEmailController.runReservationSummaryReport()}"
+                                             value="Run Summary Email Report">
+                                <f:ajax execute="@this" render="emailReservationSummaryReportMessage"/>
+                            </p:commandButton>
+                        </p:panel>
+                        <p:panel header="Recipe 4 - AcmeWorldServletContextListener">
+                            ManagedScheduledExecutorService is implemented within AcmeWorldServletContextListener...
+                        </p:panel>
+                        <p:panel header="Recipe 5 - Managed Thread">
+                            <p:commandButton id="initiateReservationAlerter" action="#{parkReservationController.initiateParkReservationAlerter()}"
+                                             value="Initiate Alerter">
+                                <f:ajax execute="@this" />
+                            </p:commandButton>
+                        </p:panel>
+                        <p:poll interval="3" listener="#{parkReservationController.pollReport}"
+                                update="reservationReportMessage" />  
+                    </h:form>
+                </f:view>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <body>
+
+        <ui:composition template="./layout/acmeWorldTemplate.xhtml">
+
+            <ui:define name="content">
+                <f:view>
+                    <h:form id="parkReservationForm">
+                        <h1>Create Reservation</h1>
+                        <br/>
+                        <h:messages id="messages" infoStyle="color: green;" errorStyle="color: red;"/>
+                        <br/>
+                        <h:panelGrid columns="2">
+                            <label for="firstName">First:</label>
+                            <p:inputText id="firstName" value="#{parkReservationController.reservation.firstName}"/>
+
+                            <label for="lastName">Last:</label>
+                            <p:inputText id="lastName" value="#{parkReservationController.reservation.lastName}"/>
+
+                            <label for="numAdults">Adults:</label>
+                            <p:inputText id="numAdults" value="#{parkReservationController.reservation.numAdults}"/>
+
+                            <label for="numChild">Children:</label>
+                            <p:inputText id="numChild" value="#{parkReservationController.reservation.numChild}"/>
+
+                            <label for="numDays">Days:</label>
+                            <p:inputText id="numDays" value="#{parkReservationController.reservation.numDays}"/>
+
+                            <label for="startDate">Trip Start:</label>
+                            <p:calendar id="startDate" value="#{parkReservationController.reservation.tripStartDate}"
+                                        navigator="true"/>
+
+                        </h:panelGrid>
+
+                        <strong>JMS Message is sent when reservation is created...</strong>
+                        <br/>
+                        <p:panel header="Sending a Message">
+                            <p:commandButton id="parkReservation" action="#{parkReservationController.createReservation}"
+                                             value="Create a Reservation">
+
+                            </p:commandButton>
+                        </p:panel>
+                    </h:form>
+
+
+                    <h:form id="messagesForm">
+                        <p:panel header="Receiving a Message">
+                            <p:commandButton id="receiveMessages" action="#{parkReservationController.receiveMessages}"
+                                             value="Receive Messages" update="receivedMessage">
+
+                            </p:commandButton>
+
+
+                            <br/><br/>
+                            <h:outputText id="receivedMessage" value="#{parkReservationController.receivedMessage}"/>
+                        </p:panel>
+                    </h:form>
+                </f:view>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>
