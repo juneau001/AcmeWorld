@@ -12,6 +12,7 @@ package org.javaee7.entity;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import javax.enterprise.inject.Vetoed;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,6 +20,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -26,6 +28,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  *
  * @author Juneau
  */
+@Vetoed
 @Entity
 @Table(name = "RESTAURANT_RESERVATION")
 @XmlRootElement
@@ -47,6 +50,7 @@ public class RestaurantReservation implements Serializable {
     @Column(name = "RESERVATION_DATE")
     private Date reservationDate;
     @NotNull
+    @Min(value=1, message="You entered ${numberOfPeople} for the number of people, please enter at least one person")
     @Column(name = "NUMBER_OF_PEOPLE")
     private BigDecimal numberOfPeople;
    

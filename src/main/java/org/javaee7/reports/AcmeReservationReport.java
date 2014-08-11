@@ -49,7 +49,7 @@ public class AcmeReservationReport implements Runnable, Serializable {
      * Prints a list of reservations to the system log.
      */
     public void runReservationReport() {
-        System.out.println("Park Resrvation Report");
+        System.out.println("Park Reservation Report");
         System.out.println("=======================");
         System.out.println("park res facade:" + parkReservationFacade);
         List<ParkReservation> reservationList = parkReservationFacade.findAll();

@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <head jsf:id="head"></head>
+    <body jsf:id="body">
+
+        <ui:composition template="/acmeWorldTemplate.xhtml">
+
+            <ui:define name="content">
+
+                <form jsf:id="restaruantReservationForm" jsf:prependId="false">
+                    <h1>Create Restaurant Reservation</h1>
+                    <br/>
+
+                    <table>
+                        <tr>
+                            <td>
+                                <label for="restaurant">Restaurant:</label>
+                            </td>
+                            <td>
+                                <select jsf:id="restaurant"
+                                        jsf:value="#{restaurantReservationController.current.restaurantId}">
+                                    <f:selectItems value="#{restaurantController.restaurantList()}"/>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for="numberOfPeople"># People</label>
+                            </td>
+                            <td>
+                                <input type="number" jsf:id="numberOfPeople" min="1" max="10"
+                                       placeholder="# People"
+                                       jsf:value="#{restaurantReservationController.current.numberOfPeople}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for="reservationId">Park Reservation Id</label>
+                            </td>
+                            <td>
+                                <input type="text" jsf:id="reservationId" 
+                                       placeholder="Reservation Id"
+                                       jsf:value="#{restaurantReservationController.current.reservationId}"/>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>
+                                <label for="reservationDate">Reservation Date:</label>
+                            </td>
+                            <td>
+                                <input type="datetime-local" jsf:id="reservationDate" 
+                                       jsf:value="#{restaurantReservationController.current.reservationDate}">
+                                    <f:convertDateTime pattern="YYYY-MM-dd  hh:mm"/>
+                                </input>
+
+                            </td>
+                        </tr>
+                    </table>
+                    <input type="button" jsf:id="restaurantReservation"
+                            jsf:action="#{restaurantReservationController.createReservation}"
+                            jsf:value="Create Restaurant Reservation"/>
+
+                </form>
+            </ui:define>
+        </ui:composition>
+
+    </body>
+</html>

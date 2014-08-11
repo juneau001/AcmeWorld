@@ -56,6 +56,19 @@ public class RestaurantReservationFacade extends AbstractFacade<RestaurantReserv
                 .setParameter("reservationId", reservationId).getSingleResult();
     }
     
+    /**
+     * Returns the number of restaurant reservations per park reservation...must
+     * be at least one restaurant reservation!
+     * 
+     * @param parkReservation
+     * @return 
+     */
+    public Long findCountByParkReservation(ParkReservation parkReservation){
+        return (Long) em.createQuery("select count(o) from RestaurantReservation o " +
+                "where o.reservationId = :parkReservationId")
+                .setParameter("parkReservationId", parkReservation.getId())
+                .getSingleResult();
+    }
    
     
 }

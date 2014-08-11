@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8' ?> 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link href="${facesContext.externalContext.requestContextPath}/contracts/standard/default.css" rel="stylesheet" type="text/css" />
+        <link href="${facesContext.externalContext.requestContextPath}/contracts/standard/cssLayout.css" rel="stylesheet" type="text/css" />
+        <title>AcmeWorld - A Java EE Developer's Paradise</title>
+               <script type="text/javascript">
+            
+	var wsocket;
+	var serviceLocation = "ws://localhost:8080/AcmeWorld/chatEndpoint";
+	var $nickName;
+	var $message;
+	var $chatWindow;
+
+ 
+	function onMessageReceived(evt) {
+		//var msg = eval('(' + evt.data + ')');
+		var msg = JSON.parse(evt.data); // native API
+		var $messageLine = $('<tr><td class="received">' + msg.received
+				+ '</td><td class="user label label-info">' + msg.sender
+				+ '</td><td class="message badge">' + msg.message
+				+ '</td></tr>');
+		$chatWindow.append($messageLine);
+	}
+	function sendMessage() {
+		var msg = '{"message":"' + $message.val() + '", "sender":"'
+				+ $nickName.val() + '", "received":""}';
+		wsocket.send(msg);
+		$message.val('').focus();
+	}
+ 
+	function connectToChatserver() {
+		wsocket = new WebSocket(serviceLocation);
+		wsocket.onmessage = onMessageReceived;
+	}
+ 
+	function leave() {
+		wsocket.close();
+		$chatWindow.empty();
+		$('.chat-wrapper').hide();
+		$('.chat-signin').show();
+		$nickName.focus();
+	}
+ 
+	$(document).ready(function() {
+
+		$nickName = $('#nickname');
+                
+		$message = $('#message');
+		$chatWindow = $('#response');
+		$('.chat-wrapper').hide();
+		$nickName.focus();
+ 
+		$('#enterChat').click(function(evt) {
+                 
+			evt.preventDefault();
+			connectToChatserver();
+			$('.chat-wrapper h2').text('Chat # '+$nickName.val());
+			$('.chat-signin').hide();
+			$('.chat-wrapper').show();
+			$message.focus();
+		});
+		$('#do-chat').submit(function(evt) {
+			evt.preventDefault();
+			sendMessage()
+		});
+ 
+		$('#leave').click(function(){
+			leave();
+		});
+	});
+
+        </script>
+    </h:head>
+
+    <h:body>
+
+   
+        <p:layout fullPage="true">
+                <p:layoutUnit position="north">
+                    <div id="top">
+                        Acme World
+                    </div>
+                </p:layoutUnit>
+                <p:layoutUnit position="west">
+                    <ui:include src="/menu.xhtml"/>
+                </p:layoutUnit>
+                <p:layoutUnit position="center">
+                    <ui:insert name="content">Content</ui:insert>
+                </p:layoutUnit>
+                <p:layoutUnit class="bottom"  position="south">
+                    <div id="bottom">
+                        A world created for all Java fans!
+                    </div>
+                </p:layoutUnit>
+            </p:layout>
+      
+
+    </h:body>
+
+</html>

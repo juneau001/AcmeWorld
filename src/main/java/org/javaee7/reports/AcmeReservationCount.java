@@ -29,7 +29,7 @@ public class AcmeReservationCount implements Runnable, Serializable {
      * Prints a count of reservations.
      */
     public void runCountReport() {
-        System.out.println("Park Resrvation Count for Today");
+        System.out.println("Park Reservation Count for Today");
         System.out.println("===============================");
 
         Long reservationCount = parkReservationFacade.findCount();

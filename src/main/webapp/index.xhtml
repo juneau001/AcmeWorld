@@ -9,24 +9,37 @@
         <title>Welcome to Acme World, the place for all Java developers!</title>
     </h:head>
     <h:body>
-        <ui:composition template="./layout/acmeWorldTemplate.xhtml">
+        <ui:composition template="/acmeWorldTemplate.xhtml">
 
             <ui:define name="content">
                 <f:view>
                     <h:form id="parkReservationForm">
                         Site is currently being remodeled, but take a look at these excellent features!
-                        <p:panel header="JMS Recipes">
-                            <h:outputLink value="parkReservation.xhtml">Make Reservation</h:outputLink>
+                        <p:panel header="JSF Recipes">
+                            <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/currentReservations.xhtml">Current Reservation List (View Action) - Recipe #1</h:outputLink>
                             <br/>
-                            <h:outputLink value="topicMessageExamples.xhtml">JMS Topic Examples</h:outputLink>
+                            <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/restaurantReservation.xhtml">Restaurant Reservations (HTML5 restaurantReservation.xhtml) - Recipe #2</h:outputLink>
+                            <br/>
+                            <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/admin/addRestaurant.xhtml">Restaurant Reservations (Passthrough admin/addRestaurant.xhtml) - Recipe #2</h:outputLink>
                         </p:panel>
+                        <p:panel header="Bean Validation Recipes">
+                            <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/parkReservationJMS.xhtml">Form Validation - Recipe #4</h:outputLink>
+                            <br/>
+                            
+                        </p:panel>
+                        <p:panel header="JMS Recipes">
+                            <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/parkReservationJMS.xhtml">Make Reservation</h:outputLink>
+                            <br/>
+                            <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/topicMessageExamples.xhtml">JMS Topic Examples</h:outputLink>
+                        </p:panel>
+                        
                         <b>Reports</b>
                         <br/><br/>
-                        <h:outputLink value="reports/currentReservations.xhtml">Current Reservation List</h:outputLink>
+                        <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/currentReservations.xhtml">Current Reservation List</h:outputLink>
                         <br/>
-                        <h:outputLink value="reports/parkReservations.xhtml">Park Reservation Report</h:outputLink>
+                        <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/reports/parkReservations.xhtml">Park Reservation Report</h:outputLink>
                         <br/>
-                        <h:outputLink value="reports/reportGenerator.xhtml">Report Generator</h:outputLink>
+                        <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/reports/reportGenerator.xhtml">Report Generator</h:outputLink>
                     </h:form>
                 </f:view>
             </ui:define>

@@ -1,8 +1,6 @@
 
 package org.javaee7.jsf;
 
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -16,11 +14,22 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.concurrent.ManagedThreadFactory;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
+import javax.inject.Named;
+import javax.interceptor.Interceptors;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
 import org.javaee7.alerter.ReservationAlerter;
 import org.javaee7.entity.ParkReservation;
+import org.javaee7.interceptor.NewLoggable;
 import org.javaee7.jms.MessageReceiver;
 import org.javaee7.jms.QueueMessageProducer;
 import org.javaee7.reports.AcmeParkReservation;
@@ -28,6 +37,7 @@ import org.javaee7.reports.AcmeReservationReport;
 import org.javaee7.session.ParkAdmissionFacade;
 import org.javaee7.session.ParkFacade;
 import org.javaee7.session.ParkReservationFacade;
+import org.javaee7.session.ReservationBookingBean;
 import org.javaee7.session.ReservationScheduleFacade;
 
 /**
@@ -46,6 +56,11 @@ public class ParkReservationController implements Serializable {
     private ParkAdmissionFacade   parkAdmissionFacade;
     @EJB
     private ParkFacade parkFacade;
+    @EJB
+    private ReservationBookingBean reservationBookingBean;
+    
+    @Inject
+    RestaurantReservationController restaurantReservationController;
     
     @Inject
     QueueMessageProducer messageProducer;
@@ -61,12 +76,17 @@ public class ParkReservationController implements Serializable {
     
     
     private ParkReservation reservation;
+    private String restaurantReservationNotification;
+    
+    private BigDecimal parkReservationId;
     
     private Future reportFuture = null;
     private List<Future<ParkReservation>> reservations;
 
     private String reservationReportMessage;
     private String receivedMessage;
+    
+    private String reservationRestXml;
     
 
     /**
@@ -162,7 +182,9 @@ public class ParkReservationController implements Serializable {
     /**
      * Create a new reservation
      *
+     * @return 
      */
+    @NewLoggable
     public String createReservation(){
         if(reservation == null && reservation.getLastName()!= null){
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
@@ -178,6 +200,75 @@ public class ParkReservationController implements Serializable {
                     "Successful Reservation Creation", "Successful Reservation Creation"));
         }
         return null;
+    }
+    
+    /**
+     * Modify a reservation
+     * @return 
+     */
+
+    public String modifyReservation(){
+        if(reservation.getFirstName() != null && reservation.getLastName()!= null){
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "No Reservation made, please try again", "No Reservation made, please try again"));
+        } else {
+            System.out.println(reservation.getFirstName());
+            ejbFacade.edit(reservation);
+            // Invoke JMS message sending within our MessageProducer bean
+            messageProducer.sendMessageNew(reservation);
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,
+                    "Successful Reservation Modification", "Successful Reservation Modification"));
+        }
+        return null;
+    }
+    
+    /**
+     * Invoke manual reservation creation
+     * @return 
+     */
+    public String invokeManualReservation(){
+        return createReservation(reservation.getFirstName(),
+                          reservation.getLastName(),
+                          reservation.getNumAdults(),
+                          reservation.getNumChild(),
+                          reservation.getNumDays(),
+                          reservation.getTripStartDate());
+    }
+    
+    /**
+     * Manually create a reservation.
+     * 
+     * @param firstName
+     * @param lastName
+     * @param numberAdults
+     * @param numberChildren
+     * @param numberDays
+     * @param tripStartDate
+     * @return 
+     */
+    public String createReservation(@NotNull 
+                                    String firstName,
+                                    @NotNull 
+                                    String lastName,
+                                    @Min(value=1) 
+                                    @Max(value=15) 
+                                    int     numberAdults,
+                                    @Min(value=0) 
+                                    @Max(value=15) 
+                                    int     numberChildren,
+                                    @Min(value=1)
+                                    int     numberDays,
+                                    Date    tripStartDate){
+        ParkReservation newReservation = new ParkReservation();
+        newReservation.setFirstName(firstName);
+        newReservation.setLastName(lastName);
+        newReservation.setNumAdults(numberAdults);
+        newReservation.setNumChild(numberChildren);
+        newReservation.setNumDays(numberDays);
+        newReservation.setTripStartDate(tripStartDate);
+        newReservation.setEnterDate(new Date());
+        ejbFacade.create(newReservation);
+        return "RESERVATION_CREATED";
     }
     
     public void receiveMessages(){
@@ -238,6 +329,30 @@ public class ParkReservationController implements Serializable {
         }
         return reservation;
     }
+    
+    /**
+     * Recipe 1:  viewAction
+     * 
+     * Loads the currently selected reservation from the currentReservations view, 
+     * and displays the detail within the parkReservation view
+     * @return 
+     */
+    public String loadReservation(){
+        if (parkReservationId != null){
+        reservation = ejbFacade.findById(parkReservationId);
+        checkRestaurantReservationPolicy();
+        }
+        return null;
+    }
+    
+    /**
+     * Initiate a new reservation
+     * @return 
+     */
+    public String createNewReservation(){
+        reservation = null;
+        return null;
+    }
 
     /**
      * @param reservation the reservation to set
@@ -258,6 +373,78 @@ public class ParkReservationController implements Serializable {
      */
     public void setReceivedMessage(String receivedMessage) {
         this.receivedMessage = receivedMessage;
+    }
+
+    /**
+     * @return the parkReservation
+     */
+    public BigDecimal getParkReservationId() {
+        return parkReservationId;
+    }
+
+    /**
+     * @param parkReservation the parkReservation to set
+     */
+    public void setParkReservationId(BigDecimal parkReservationId) {
+        this.parkReservationId = parkReservationId;
+    }
+
+    /**
+     * @return the restaurantReservationNotification
+     */
+    public String getRestaurantReservationNotification() {
+        return restaurantReservationNotification;
+    }
+
+    /**
+     * @param restaurantReservationNotification the restaurantReservationNotification to set
+     */
+    public void setRestaurantReservationNotification(String restaurantReservationNotification) {
+        this.restaurantReservationNotification = restaurantReservationNotification;
+    }
+    
+    /**
+     * Checks to ensure that the park reservation meets the restaurant reservation policy
+     */
+    public void checkRestaurantReservationPolicy(){
+        Long reservationCount = restaurantReservationController.countByParkReservation(reservation);
+        if(reservationCount < 1){
+            setRestaurantReservationNotification("<font color='red'>Guest must book at least one restaurant reservation</font>");
+        } else {
+            setRestaurantReservationNotification("<font color='green'>Minimum restaurant reservation booked.</font>");
+        }
+    }
+    
+    /**
+     * Navigate to Reservation Details
+     * @return 
+     */
+    public String reservationDetails(){
+        
+        return "reservationDetail";
+    }
+    
+    public void invokeRestClient(){
+        Client client = ClientBuilder.newClient();
+       
+        WebTarget webTarget =  client.target("http://localhost:8080/AcmeWorld/rest/reservationRest");
+        Response res = webTarget.request("application/xml").get();
+            
+        setReservationRestXml(res.readEntity(String.class));
+    }
+
+    /**
+     * @return the reservationRestXml
+     */
+    public String getReservationRestXml() {
+        return reservationRestXml;
+    }
+
+    /**
+     * @param reservationRestXml the reservationRestXml to set
+     */
+    public void setReservationRestXml(String reservationRestXml) {
+        this.reservationRestXml = reservationRestXml;
     }
 
     

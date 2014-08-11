@@ -8,8 +8,7 @@
 
 
     <f:metadata>
-        <f:viewParam name="id" value="#{parkReservationController.parkReservationId}"/>
-        <f:viewAction action="#{parkReservationController.loadReservation}"/>
+        <f:viewAction action="#{parkReservationController.createNewReservation}"/>
     </f:metadata>
 
 
@@ -24,67 +23,53 @@
                         <br/>
                         <h:messages id="messages" infoStyle="color: green;" errorStyle="color: red;"/>
                         <br/>
-                        <p:notificationBar position="top" effect="slide" widgetVar="bar" autoDisplay="true">
-
-                            <h:outputText escape="false" style="font-size:36px;"
-                                          value="#{parkReservationController.restaurantReservationNotification}"/>
-                            <p:commandButton value="Hide" onclick="PF('bar').hide()" type="button" icon="ui-icon-arrow-1-n"/>
-                        </p:notificationBar>
-                        <br/>
-                        <h:panelGrid columns="3">
+                        <h:panelGrid columns="2">
                             <label for="firstName">First:</label>
                             <p:inputText id="firstName" value="#{parkReservationController.reservation.firstName}"/>
-                            <p:message for="firstName"/>
 
                             <label for="lastName">Last:</label>
                             <p:inputText id="lastName" value="#{parkReservationController.reservation.lastName}"/>
-                            <p:message for="lastName"/>
 
                             <label for="numAdults">Adults:</label>
                             <p:spinner id="numAdults" min="1" max="15"
                                        value="#{parkReservationController.reservation.numAdults}"/>
-                            <p:message for="numAdults"/>
 
                             <label for="numChild">Children:</label>
                             <p:spinner id="numChild" min="0" max="15"
                                        value="#{parkReservationController.reservation.numChild}"/>
-                            <p:message for="numChild"/>
 
                             <label for="numDays">Days:</label>
                             <p:spinner id="numDays" min="0" max="30"
                                        value="#{parkReservationController.reservation.numDays}"/>
-                            <p:message for="numDays"/>
 
                             <label for="startDate">Trip Start:</label>
                             <p:calendar id="startDate" value="#{parkReservationController.reservation.tripStartDate}"/>
-                            <p:message for="startDate"/>
 
                         </h:panelGrid>
 
+                        <strong>JMS Message is sent when reservation is created...</strong>
+                        <br/>
+                        <p:panel header="Sending a Message">
+                            <p:commandButton id="parkReservation" ajax="false" action="#{parkReservationController.createReservation}"
+                                             value="Create a Reservation">
 
-                        <p:commandButton id="createReservation" action="#{parkReservationController.createReservation}"
-                                         rendered="#{parkReservationController.parkReservationId eq null}"
-                                         value="Create a Reservation" update="messages">
-
-                        </p:commandButton>
-                        
-                        <p:commandButton id="updateReservation" action="#{parkReservationController.createReservation}"
-                                         rendered="#{parkReservationController.parkReservationId ne null}"
-                                         value="Modify Reservation" update="messages">
-
-                        </p:commandButton>
-                        
-                        <p:panel header="Manage Reservation" rendered="#{parkReservationController.parkReservationId ne null}">
-                            <p:commandButton ajax="false" value="View and Plan Details"
-                                             action="#{parkReservationController.reservationDetails}"/>
-                            
+                            </p:commandButton>
                         </p:panel>
-                        
-
                     </h:form>
-                    
-                    
 
+
+                    <h:form id="messagesForm">
+                        <p:panel header="Receiving a Message">
+                            <p:commandButton id="receiveMessages" action="#{parkReservationController.receiveMessages}"
+                                             value="Receive Messages" update="receivedMessage">
+
+                            </p:commandButton>
+
+
+                            <br/><br/>
+                            <h:outputText id="receivedMessage" value="#{parkReservationController.receivedMessage}"/>
+                        </p:panel>
+                    </h:form>
                 </f:view>
             </ui:define>
 

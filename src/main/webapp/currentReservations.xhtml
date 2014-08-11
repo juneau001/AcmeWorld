@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <body>
+
+        <ui:composition template="/acmeWorldTemplate.xhtml">
+
+            <ui:define name="content">
+                <f:view>
+                    <h:form id="parkReservationForm">
+                        <p:dataTable id="currentReservations" var="reservation" 
+                                     value="#{parkReservationController.currentReservations()}">
+                          
+                            <p:column headerText="Name">
+                                <h:link value="#{reservation.lastName}, #{reservation.firstName}" outcome="parkReservation">
+                                    <f:param name="id" value="#{reservation.id}"/>
+                                </h:link>
+                            </p:column>
+                            <p:column headerText="Last">
+
+                                <h:outputText value="#{reservation.lastName}"/>
+                            </p:column>
+                            <p:column headerText="# Adults">
+
+                                <h:outputText value="#{reservation.numAdults}"/>
+                            </p:column>
+                            <p:column headerText="# Children">
+
+                                <h:outputText value="#{reservation.numChild}"/>
+                            </p:column>
+                            <p:column headerText="# Days">
+
+                                <h:outputText value="#{reservation.numDays}"/>
+                            </p:column>
+                            <p:column headerText="Vacation Start">
+
+                                <h:outputText value="#{reservation.tripStartDate}">
+                                    <f:convertDateTime pattern="MM-dd-YYYY"/>
+                                </h:outputText>
+                            </p:column>
+                            
+                        </p:dataTable>
+                    </h:form>
+                </f:view>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

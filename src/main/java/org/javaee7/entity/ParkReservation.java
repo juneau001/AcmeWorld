@@ -3,48 +3,68 @@ package org.javaee7.entity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Date;
+import javax.enterprise.inject.Vetoed;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import org.javaee7.entity.listener.ParkReservationListener;
 
 /**
  *
  * @author Juneau
  */
+@Vetoed
 @Entity
 @Table(name = "PARK_RESERVATION")
 @XmlRootElement
+@EntityListeners(ParkReservationListener.class)
 public class ParkReservation implements Serializable {
-    private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
     @NotNull
     @Column(name = "ID")
     private BigDecimal id;
     @NotNull
+    @Size(min=1, message="Please enter a first name")
     @Column(name = "FIRST_NAME")
     private String firstName;
+    @NotNull
+    @Size(min=1, message="Please enter a last name")
     @Column(name = "LAST_NAME")
     private String lastName;
-    @Column(name = "NUM_ADULTS")
-    private int numAdults;
-    @Column(name = "NUM_CHILD")
-    private int numChild;
-    @Column(name = "NUM_DAYS")
-    private int numDays;
+    @NotNull(message="You must include a trip start date")
     @Temporal(TemporalType.DATE)
     @Column(name = "TRIP_START_DATE")
     private Date tripStartDate;
     @Temporal(TemporalType.DATE)
     @Column(name = "ENTER_DATE")
     private Date enterDate;
+    @Min(value=1, message="Your trip must include one adult")
+    @Column(name = "NUM_ADULTS")
+    private int numAdults;
+    @Column(name = "NUM_CHILD")
+    private int numChild;
+    @Min(value=1, message="You've selected ${validatedValue} for your reservation, you must book at least one day")
+    @Column(name = "NUM_DAYS")
+    private int numDays;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "reservationId")
+    private Collection<TripReservationDetail> tripReservationDetailCollection;
+    private static final long serialVersionUID = 1L;
+    
     
             
     public ParkReservation() {
@@ -190,6 +210,15 @@ public class ParkReservation implements Serializable {
      */
     public void setEnterDate(Date enterDate) {
         this.enterDate = enterDate;
+    }
+
+    @XmlTransient
+    public Collection<TripReservationDetail> getTripReservationDetailCollection() {
+        return tripReservationDetailCollection;
+    }
+
+    public void setTripReservationDetailCollection(Collection<TripReservationDetail> tripReservationDetailCollection) {
+        this.tripReservationDetailCollection = tripReservationDetailCollection;
     }
 
     
