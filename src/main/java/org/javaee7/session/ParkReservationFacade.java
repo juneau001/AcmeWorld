@@ -3,9 +3,15 @@ package org.javaee7.session;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
 import org.javaee7.entity.ParkReservation;
 
 /**
@@ -68,4 +74,16 @@ public class ParkReservationFacade extends AbstractFacade<ParkReservation> {
                 .setParameter("today", cal.getTime()).getSingleResult();
     }
     
+    /**
+     * Returns the count of new reservations for the past week
+     * @return 
+     */
+    public long findWeeklyCount(){
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -7);
+        return (long) em.createQuery("select count(o) from ParkReservation o " +
+                "where o.enterDate > :week")
+                .setParameter("week", cal.getTime()).getSingleResult();
+    }
+
 }

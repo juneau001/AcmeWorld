@@ -22,7 +22,6 @@ public class AcmeAlerterContextListener implements ServletContextListener {
         System.out.println("Initializing context and creating thread....");
         
         alerterThread = threadFactory.newThread(new ReservationAlerter());
-        System.out.println(alerterThread);
         alerterThread.start();
     }
 

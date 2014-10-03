@@ -7,13 +7,16 @@
 
     <h:form>
     <p:panel header="Menu">
-        <h:commandLink value="Admin" action="#{navigationController.navigateToAdmin()}"/>
+        <h:commandLink rendered="#{authenticationController.authenticated}"
+                       value="Admin" action="#{navigationController.navigateToAdmin()}"/>
         <br/><br/>
         <h:commandLink value="Standard" action="#{navigationController.navigateToStandard()}"/>
         <br/><br/>
-        <h:outputLink value="chat.xhtml" >
-            Chat
-        </h:outputLink>
+        <h:commandLink value="Login" action="#{navigationController.navigateToLogin()}"/>
+        <br/><br/>
+        <h:commandLink value="Information" action="#{navigationController.navigateToInfo()}"/>
+        <br/><br/>
+        <h:commandLink value="Chat" action="#{navigationController.navigateToChat()}"/>
     </p:panel>
     </h:form>
 

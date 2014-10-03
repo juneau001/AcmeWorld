@@ -29,7 +29,7 @@ public class NewReservationLogger implements Serializable {
     public Object createReservation(InvocationContext ctx) throws Exception {
         
             // normally write to a formal log
-            System.out.println("New resrvation made for " + parkReservationController.getReservation().getLastName());
+            System.out.println("New reservation made for " + parkReservationController.getReservation().getLastName());
        return ctx.getTarget();
     }
 }

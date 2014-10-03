@@ -13,6 +13,8 @@
             <ui:define name="content">
                 <f:view>
                     <h:form id="reportGeneratorForm">
+                        <p:messages id="concurrencyMessages"/>
+                        <br/><br/>
                         Click on the button below to run the reservation report, and then look at the server log to see the details.
                         <br/><br/>
                         <h:outputText id="reservationReportMessage" style="color: green" 
@@ -40,25 +42,44 @@
                         </p:panel>
 
                         <p:panel header="Recipe 3 - Merge Content of Many Managed Tasks">
-                                 <h:outputText id="emailReservationSummaryReportMessage" style="color: green" 
+                                 <h:outputText  id="emailReservationSummaryReportMessage" style="color: green" 
                                       value="#{acmeSummaryEmailController.emailSummaryReportMessage}"/>
 
+                                 <br/>
                             <p:commandButton id="emailReservationSummaryReport" action="#{acmeSummaryEmailController.runReservationSummaryReport()}"
                                              value="Run Summary Email Report">
                                 <f:ajax execute="@this" render="emailReservationSummaryReportMessage"/>
                             </p:commandButton>
                         </p:panel>
-                        <p:panel header="Recipe 4 - AcmeWorldServletContextListener">
+                        <p:panel header="Recipe 4 - ManagedScheduledExecutorService">
                             ManagedScheduledExecutorService is implemented within AcmeWorldServletContextListener...
                         </p:panel>
-                        <p:panel header="Recipe 5 - Managed Thread">
+                        <p:panel header="Recipe 5 - Trigger API">
+                            
+                            Seconds to Skip:
+                            <p:inputText id="scheduledSkipTime" value="#{parkReservationController.schedulerSkipTime}"/>
+                            <br/><br/>
+                            <p:commandButton id="trigger" action="#{parkReservationController.scheduleWeeklyReports()}"
+                                             value="Schedule Weekly" update="concurrencyMessages">
+                            </p:commandButton>
+                           
+                        </p:panel>
+                        <p:panel header="Recipe 6 - Managed Thread">
                             <p:commandButton id="initiateReservationAlerter" action="#{parkReservationController.initiateParkReservationAlerter()}"
                                              value="Initiate Alerter">
                                 <f:ajax execute="@this" />
                             </p:commandButton>
                         </p:panel>
+                        
                         <p:poll interval="3" listener="#{parkReservationController.pollReport}"
                                 update="reservationReportMessage" />  
+                        
+                        <p:poll interval="3" listener="#{acmeSummaryEmailController.pollSummaryReport}"
+                                update="emailReservationSummaryReportMessage" />  
+                        
+                        <p:panel header="Recipe 7 - Contextual Proxy">
+                            <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/processPromotions.xhtml">Process Promotions</h:outputLink>
+                        </p:panel>
                     </h:form>
                 </f:view>
             </ui:define>

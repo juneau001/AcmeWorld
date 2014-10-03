@@ -4,22 +4,27 @@ package org.javaee7.jsf;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.enterprise.concurrent.ManagedExecutorService;
+import javax.enterprise.concurrent.ManagedExecutors;
+import javax.enterprise.concurrent.ManagedScheduledExecutorService;
+import javax.enterprise.concurrent.ManagedTaskListener;
 import javax.enterprise.concurrent.ManagedThreadFactory;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.interceptor.Interceptors;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -28,12 +33,18 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import org.javaee7.alerter.ReservationAlerter;
+import org.javaee7.concurrency.SkipSpecifiedTimeTrigger;
 import org.javaee7.entity.ParkReservation;
 import org.javaee7.interceptor.NewLoggable;
 import org.javaee7.jms.MessageReceiver;
 import org.javaee7.jms.QueueMessageProducer;
+import org.javaee7.listener.CustomManagedTaskListener;
 import org.javaee7.reports.AcmeParkReservation;
+import org.javaee7.reports.AcmeParkReservationLong;
 import org.javaee7.reports.AcmeReservationReport;
+import org.javaee7.reports.AcmeWeeklyReservationCount;
+import org.javaee7.rss.ConcurrentFeedReader;
+import org.javaee7.rss.Feed;
 import org.javaee7.session.ParkAdmissionFacade;
 import org.javaee7.session.ParkFacade;
 import org.javaee7.session.ParkReservationFacade;
@@ -74,6 +85,9 @@ public class ParkReservationController implements Serializable {
     @Resource(name="concurrent/__defaultManagedThreadFactory") 
     ManagedThreadFactory threadFactory;
     
+    @Resource(name="concurrent/_defaultManagedScheduledExecutorService")
+    ManagedScheduledExecutorService msexec;
+    
     
     private ParkReservation reservation;
     private String restaurantReservationNotification;
@@ -88,6 +102,19 @@ public class ParkReservationController implements Serializable {
     
     private String reservationRestXml;
     
+    private String reservationId;
+    private String feedUrl;
+    private Future feedFuture;
+    private Feed foundFeed;
+    private String feedMessage;
+    
+    // Weekly Report Skip Time
+    private int schedulerSkipTime = 0;
+    
+    private Future longRunningParkReservationFuture;
+    ManagedTaskListener mtListener;
+    private ParkReservation longRunningReservation;
+    
 
     /**
      * Creates a new instance of ParkReservationController
@@ -98,7 +125,7 @@ public class ParkReservationController implements Serializable {
     public List<ParkReservation> currentReservations() {
         return ejbFacade.findAll();
     }
-
+   
     /**
      * Recipe 1:  Executing a Managed Task
      */
@@ -178,14 +205,69 @@ public class ParkReservationController implements Serializable {
         }
         
     }
+    
+    public void runAndDisplayReservationReport(){
+        longRunningParkReservationFuture = null;
+        AcmeParkReservationLong res = new AcmeParkReservationLong(reservationId,
+                                            new BigDecimal(reservationId), ejbFacade);
+        //mtListener = res.getManagedTaskListener();
+        Callable parkReservationCallable = ManagedExecutors.managedTask(res, new CustomManagedTaskListener());
+        longRunningParkReservationFuture = mes.submit(parkReservationCallable);
+        setReservationReportMessage("In Progress");
+        reservationId = null;
+        
+    }
 
+    public void pollLongRunningReservation(){
+        if(longRunningParkReservationFuture != null){
+            if(longRunningParkReservationFuture.isDone()){
+                setReservationReportMessage("Report Complete!");
+                try {
+                    longRunningReservation = (ParkReservation) longRunningParkReservationFuture.get();
+                } catch (InterruptedException|ExecutionException ex) {
+                    Logger.getLogger(ParkReservationController.class.getName()).log(Level.SEVERE, null, ex);
+                } 
+            } else {
+                setReservationReportMessage("In Progress...");
+            }
+        }
+        
+    }
+    
+    public void submitFeed(){
+        feedFuture = null;
+        ConcurrentFeedReader freader = new ConcurrentFeedReader(feedUrl);
+      
+        feedFuture = mes.submit(freader);
+        setFeedMessage("Feed Reading...");
+        feedUrl = null;
+    }
+    
+    public void pollFeedRead(){
+        if(feedFuture != null){
+            if(feedFuture.isDone()){
+                setFeedMessage("Feed Read Complete!");
+                try {
+                    foundFeed = (Feed) feedFuture.get();
+                    System.out.println("How many: " + foundFeed.getMessages().size());
+                } catch (InterruptedException|ExecutionException ex) {
+                    Logger.getLogger(ParkReservationController.class.getName()).log(Level.SEVERE, null, ex);
+                } 
+            } else {
+                setReservationReportMessage("Feed Reading...");
+            }
+        }
+        
+    }
+    
     /**
      * Create a new reservation
      *
      * @return 
      */
-    @NewLoggable
+    //@NewLoggable
     public String createReservation(){
+
         if(reservation == null && reservation.getLastName()!= null){
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
                     "No Reservation made, please try again", "No Reservation made, please try again"));
@@ -292,7 +374,7 @@ public class ParkReservationController implements Serializable {
     }
     
     /**
-     * Recipe 4: Implementing a managed thread
+     * Recipe 6: Implementing a managed thread
      */
     public void initiateParkReservationAlerter(){   
         reservationReportMessage = "Starting alerter thread...";
@@ -427,7 +509,7 @@ public class ParkReservationController implements Serializable {
     public void invokeRestClient(){
         Client client = ClientBuilder.newClient();
        
-        WebTarget webTarget =  client.target("http://localhost:8080/AcmeWorld/rest/reservationRest");
+        WebTarget webTarget =  client.target("http://localhost:8080/AcmeWorld/rest/reservationRest/all");
         Response res = webTarget.request("application/xml").get();
             
         setReservationRestXml(res.readEntity(String.class));
@@ -445,6 +527,121 @@ public class ParkReservationController implements Serializable {
      */
     public void setReservationRestXml(String reservationRestXml) {
         this.reservationRestXml = reservationRestXml;
+    }
+    
+    public void scheduleWeeklyReports(){
+        System.out.println("Scheduling Weekly Reports");
+        AcmeWeeklyReservationCount weekly = new AcmeWeeklyReservationCount();
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.SECOND, 5);
+        // Schedule to begin in 5 seconds, and then execute every n seconds
+        // thereafter
+        msexec.schedule(weekly, new SkipSpecifiedTimeTrigger(cal.getTime(), schedulerSkipTime));
+        String message = "Weekly Reports Scheduled for " + schedulerSkipTime + " second intervals";
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,
+                    message,message));
+    }
+    
+    public void cancelWeekly(){
+        msexec.shutdown();
+    }
+
+    /**
+     * @return the longRunningReservation
+     */
+    public ParkReservation getLongRunningReservation() {
+        return longRunningReservation;
+    }
+
+    /**
+     * @param longRunningReservation the longRunningReservation to set
+     */
+    public void setLongRunningReservation(ParkReservation longRunningReservation) {
+        this.longRunningReservation = longRunningReservation;
+    }
+
+    /**
+     * @return the reservationId
+     */
+    public String getReservationId() {
+        return reservationId;
+    }
+
+    /**
+     * @param reservationId the reservationId to set
+     */
+    public void setReservationId(String reservationId) {
+        this.reservationId = reservationId;
+    }
+
+    /**
+     * @return the feedUrl
+     */
+    public String getFeedUrl() {
+        return feedUrl;
+    }
+
+    /**
+     * @param feedUrl the feedUrl to set
+     */
+    public void setFeedUrl(String feedUrl) {
+        this.feedUrl = feedUrl;
+    }
+
+    /**
+     * @return the feedFuture
+     */
+    public Future getFeedFuture() {
+        return feedFuture;
+    }
+
+    /**
+     * @param feedFuture the feedFuture to set
+     */
+    public void setFeedFuture(Future feedFuture) {
+        this.feedFuture = feedFuture;
+    }
+
+    /**
+     * @return the foundFeed
+     */
+    public Feed getFoundFeed() {
+        return foundFeed;
+    }
+
+    /**
+     * @param foundFeed the foundFeed to set
+     */
+    public void setFoundFeed(Feed foundFeed) {
+        this.foundFeed = foundFeed;
+    }
+
+    /**
+     * @return the feedMessage
+     */
+    public String getFeedMessage() {
+        return feedMessage;
+    }
+
+    /**
+     * @param feedMessage the feedMessage to set
+     */
+    public void setFeedMessage(String feedMessage) {
+        this.feedMessage = feedMessage;
+    }
+
+    /**
+     * @return the schedulerSkipTime
+     */
+    public int getSchedulerSkipTime() {
+        return schedulerSkipTime;
+    }
+
+    /**
+     * @param schedulerSkipTime the schedulerSkipTime to set
+     */
+    public void setSchedulerSkipTime(int schedulerSkipTime) {
+        this.schedulerSkipTime = schedulerSkipTime;
     }
 
     

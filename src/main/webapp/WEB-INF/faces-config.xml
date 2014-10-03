@@ -14,6 +14,22 @@
             <from-outcome>STANDARD</from-outcome>
             <to-view-id>index.xhtml</to-view-id>
         </navigation-case>
+        <navigation-case>
+            <from-outcome>LOGIN</from-outcome>
+            <to-view-id>login.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>SUCCESSLOGIN</from-outcome>
+            <to-view-id>/admin/adminMain.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>INFO</from-outcome>
+            <to-view-id>/informationDisplay.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>CHAT</from-outcome>
+            <to-view-id>/chat.xhtml</to-view-id>
+        </navigation-case>
     </navigation-rule>
     <resource-library-contracts>
         <contract-mapping>

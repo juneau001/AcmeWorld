@@ -31,4 +31,15 @@ public class NavigationController {
         return "ADMIN";
     }
     
+    public String navigateToLogin(){
+        return "LOGIN";
+    }
+    
+    public String navigateToInfo(){
+        return "INFO";
+    }
+    
+    public String navigateToChat(){
+        return "CHAT";
+    }
 }

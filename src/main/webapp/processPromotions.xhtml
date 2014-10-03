@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:body>
+
+        <ui:composition template="/acmeWorldTemplate.xhtml">
+
+            <ui:define name="content">
+                <f:view>
+                    <h1>Process Promotions</h1>
+                   
+                        <h:form id="contextualExamples">
+                            The table below lists all of the promotions that have been
+                            registered.  Please click on a specified promotion to implement.
+                            <p:messages />
+                            <p:dataTable value="#{promotionController.obtainPromotions()}" var="promotion">
+                                <p:column headerText="Task">
+                                    <p:commandButton action="#{promotion.processPromotion()}" value="Process Promotion"
+                                                     update="@form"/>
+                                    
+                                </p:column>
+                                <p:column headerText="Promotion Name">
+                                    <h:outputText value="#{promotion.name}"/>
+                                </p:column>
+                                <p:column headerText="Creator">
+                                    <h:outputText value="#{promotion.user.userName}"/>
+                                </p:column>
+                                <p:column headerText="Processed">
+                                    <h:outputText rendered="#{promotion.processed}"
+                                                  value="YES"/>
+                                    <h:outputText rendered="#{!promotion.processed}"
+                                                  value="NO"/>
+                                </p:column>
+                            </p:dataTable>
+
+                        </h:form>
+                    
+                </f:view>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -1,4 +1,3 @@
-
 package org.javaee7.jsf;
 
 import java.math.BigDecimal;
@@ -23,50 +22,39 @@ import org.javaee7.session.RestaurantReservationFacade;
 @Named(value = "acmeSummaryEmailController")
 @SessionScoped
 public class AcmeSummaryEmailController implements java.io.Serializable {
-    
+
     // Inject without explicitly naming the concurrent/_defaultManagedExecutorService
     // This makes the example portable across multiple Java EE containers
     @Resource
     ManagedExecutorService mes;
-    
+
     @EJB
     ParkReservationFacade parkReservationFacade;
-    
+
     @EJB
     RestaurantReservationFacade restaurantReservationFacade;
-    
-    private String emailSummaryReportMessage;
-    
-    public AcmeSummaryEmailController(){
-        
+
+    private String emailSummaryReportMessage = null;
+    private boolean displaySummaryReportMessage = false;
+    private Future<ParkReservation> parkReservationFuture;
+    private Future<RestaurantReservation> restaurantReservationFuture;
+
+    public AcmeSummaryEmailController() {
+
     }
+
     /**
      * Recipe 3
      */
     public void runReservationSummaryReport() {
         String reportId = "001";
         BigDecimal accountID = new BigDecimal("1");
-          Future<ParkReservation> parkReservationFuture = mes.submit(
-                  new AcmeParkReservation(reportId, accountID, parkReservationFacade));
-          Future<RestaurantReservation> restaurantReservationFuture = mes.submit (
-                  new AcmeRestaurantReservation(reportId, accountID, restaurantReservationFacade));
-          
-          // Wait for the results.
-          
-          try {
-            ParkReservation parkReservation = parkReservationFuture.get();
-            RestaurantReservation restaurantReservation = restaurantReservationFuture.get();
-          // Process the results
-              System.out.println("Park Reservation Info: " + 
-                      parkReservation.getFirstName() + " " + parkReservation.getLastName());
-              System.out.println("Restaurant Reservation Info: " + restaurantReservation.getReservationDate());
-              setEmailSummaryReportMessage("Email Summary Complete");
-          } catch (InterruptedException|ExecutionException ex){
-              // Do something nice in production and comment this line out
-              System.out.println("Exception: " + ex);  
-              setEmailSummaryReportMessage("Email Summary Report Issue Occurred");
-          }
-      }
+        parkReservationFuture = mes.submit(
+                new AcmeParkReservation(reportId, accountID, parkReservationFacade));
+        restaurantReservationFuture = mes.submit(
+                new AcmeRestaurantReservation(reportId, accountID, restaurantReservationFacade));
+
+    }
 
     /**
      * @return the emailSummaryReportMessage
@@ -81,5 +69,60 @@ public class AcmeSummaryEmailController implements java.io.Serializable {
     public void setEmailSummaryReportMessage(String emailSummaryReportMessage) {
         this.emailSummaryReportMessage = emailSummaryReportMessage;
     }
-    
+
+    /**
+     * Polls the Future objects
+     */
+    public void pollSummaryReport() {
+        if (parkReservationFuture != null) {
+            if (parkReservationFuture.isDone()) {
+                if (restaurantReservationFuture != null) {
+                    if (restaurantReservationFuture.isDone()) {
+                        // Wait for the results.
+                        try {
+                            ParkReservation parkReservation = parkReservationFuture.get();
+                            RestaurantReservation restaurantReservation = restaurantReservationFuture.get();
+                            // Process the results
+                            System.out.println("Park Reservation Info: "
+                                    + parkReservation.getFirstName() + " " + parkReservation.getLastName());
+                            System.out.println("Restaurant Reservation Info: " + restaurantReservation.getReservationDate());
+                            setEmailSummaryReportMessage("Email Summary Complete: "
+                                    + "Park Reservation Info: "
+                                    + parkReservation.getFirstName() + " " + parkReservation.getLastName());
+                            displaySummaryReportMessage = true;
+                        } catch (InterruptedException | ExecutionException ex) {
+                            // Do something nice in production and comment this line out
+                            System.out.println("Exception: " + ex);
+                            setEmailSummaryReportMessage("Email Summary Report Issue Occurred");
+                        }
+                        parkReservationFuture = null;
+                        restaurantReservationFuture = null;
+                        displaySummaryReportMessage = false;
+                    }
+                }
+            }
+        } else {
+            if (displaySummaryReportMessage) {
+                setEmailSummaryReportMessage("Report Still Running...");
+            } else {
+                setEmailSummaryReportMessage("");
+            }
+        }
+
+    }
+
+    /**
+     * @return the displaySummaryReportMessage
+     */
+    public boolean isDisplaySummaryReportMessage() {
+        return displaySummaryReportMessage;
+    }
+
+    /**
+     * @param displaySummaryReportMessage the displaySummaryReportMessage to set
+     */
+    public void setDisplaySummaryReportMessage(boolean displaySummaryReportMessage) {
+        this.displaySummaryReportMessage = displaySummaryReportMessage;
+    }
+
 }

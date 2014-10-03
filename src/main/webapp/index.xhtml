@@ -18,9 +18,9 @@
                         <p:panel header="JSF Recipes">
                             <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/currentReservations.xhtml">Current Reservation List (View Action) - Recipe #1</h:outputLink>
                             <br/>
-                            <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/restaurantReservation.xhtml">Restaurant Reservations (HTML5 restaurantReservation.xhtml) - Recipe #2</h:outputLink>
+                            <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/restaurantReservation.xhtml">Restaurant Reservations (HTML5 restaurantReservation.xhtml) - Recipe #3.1</h:outputLink>
                             <br/>
-                            <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/admin/addRestaurant.xhtml">Restaurant Reservations (Passthrough admin/addRestaurant.xhtml) - Recipe #2</h:outputLink>
+                            <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/admin/addRestaurant.xhtml">Restaurant Reservations (Passthrough admin/addRestaurant.xhtml) - Recipe #3.2</h:outputLink>
                         </p:panel>
                         <p:panel header="Bean Validation Recipes">
                             <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/parkReservationJMS.xhtml">Form Validation - Recipe #4</h:outputLink>
@@ -33,13 +33,24 @@
                             <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/topicMessageExamples.xhtml">JMS Topic Examples</h:outputLink>
                         </p:panel>
                         
-                        <b>Reports</b>
+                        <p:panel header="Reports">
                         <br/><br/>
                         <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/currentReservations.xhtml">Current Reservation List</h:outputLink>
                         <br/>
                         <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/reports/parkReservations.xhtml">Park Reservation Report</h:outputLink>
                         <br/>
                         <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/reports/reportGenerator.xhtml">Report Generator</h:outputLink>
+                        </p:panel>
+                        <p:panel header="Promotions">
+                            <h:outputLink value="#{facesContext.externalContext.request.contextPath}/faces/processPromotions.xhtml">Process Promotions</h:outputLink>
+                        </p:panel>
+                        <p:panel header="JAX-RS">
+                            <h:outputLink target="_blank"
+                                          value="#{facesContext.externalContext.request.contextPath}/rest/reservationRest/all">All Park Reservations</h:outputLink>
+                            <br/><br/>
+                            <h:outputLink target="_blank"
+                                          value="#{facesContext.externalContext.request.contextPath}/rest/reservationRest/allAsync">All Park Reservations (Async)</h:outputLink>
+                        </p:panel>
                     </h:form>
                 </f:view>
             </ui:define>
