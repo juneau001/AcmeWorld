@@ -2,6 +2,7 @@
 package org.javaee7.session;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -67,11 +68,13 @@ public class ParkReservationFacade extends AbstractFacade<ParkReservation> {
      * @return 
      */
     public long findCount(){
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DATE, -1);
+        //Calendar cal = Calendar.getInstance();
+        //cal.add(Calendar.DATE, -1);
+        LocalDate date = LocalDate.now();
+        
         return (long) em.createQuery("select count(o) from ParkReservation o " +
                 "where o.enterDate > :today")
-                .setParameter("today", cal.getTime()).getSingleResult();
+                .setParameter("today", date.minusDays(1)).getSingleResult();
     }
     
     /**
@@ -79,11 +82,12 @@ public class ParkReservationFacade extends AbstractFacade<ParkReservation> {
      * @return 
      */
     public long findWeeklyCount(){
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DATE, -7);
+       // Calendar cal = Calendar.getInstance();
+       // cal.add(Calendar.DATE, -7);
+       LocalDate date = LocalDate.now();
         return (long) em.createQuery("select count(o) from ParkReservation o " +
                 "where o.enterDate > :week")
-                .setParameter("week", cal.getTime()).getSingleResult();
+                .setParameter("week", date.minusDays(7)).getSingleResult();
     }
 
 }

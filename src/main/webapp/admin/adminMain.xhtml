@@ -20,11 +20,11 @@
                         <p:panel header="Reports">
                             <b>Reports</b>
                             <br/><br/>
-                            <h:outputLink value="currentReservations.xhtml">Current Reservation List</h:outputLink>
+                            <h:outputLink value="AcmeWorld/faces/currentReservations.xhtml">Current Reservation List</h:outputLink>
                             <br/>
-                            <h:outputLink value="reports/parkReservations.xhtml">Park Reservation Report</h:outputLink>
+                            <h:outputLink value="AcmeWorld/faces/reports/parkReservations.xhtml">Park Reservation Report</h:outputLink>
                             <br/>
-                            <h:outputLink value="reports/reportGenerator.xhtml">Report Generator</h:outputLink>
+                            <h:outputLink value="AcmeWorld/faces/reports/reportGenerator.xhtml">Report Generator</h:outputLink>
                         </p:panel>
                         <p:panel header="Active Notifications">
                             <p:dataTable var="timer" value="#{reservationCheckerController.obtainActiveTimers()}">

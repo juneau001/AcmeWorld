@@ -1,5 +1,3 @@
-
-
 package org.javaee7.jsf;
 
 import java.io.FileInputStream;
@@ -17,6 +15,8 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonPointer;
+import javax.json.JsonValue;
 import javax.json.JsonWriter;
 import javax.json.stream.JsonParser;
 import javax.json.stream.JsonParser.Event;
@@ -36,10 +36,10 @@ import org.javaee7.session.ParkReservationFacade;
 @Named(value = "jsonController")
 @SessionScoped
 public class JsonController implements Serializable {
-    
+
     @EJB
     ParkReservationFacade parkReservationFacade;
-    
+
     private StringBuilder jsonStr;
 
     /**
@@ -47,14 +47,14 @@ public class JsonController implements Serializable {
      */
     public JsonController() {
     }
-    
-    public void buildReservations(){
+
+    public void buildReservations() {
         List<ParkReservation> reservations = parkReservationFacade.findAll();
         JsonObjectBuilder builder = Json.createObjectBuilder();
         JsonArrayBuilder reservationArray = Json.createArrayBuilder();
         setJsonStr(new StringBuilder());
-        try(StringWriter sw = new StringWriter()){
-            for(ParkReservation reservation:reservations){
+        try (StringWriter sw = new StringWriter()) {
+            for (ParkReservation reservation : reservations) {
                 JsonObjectBuilder reservationBuilder = Json.createObjectBuilder();
                 reservationBuilder.add("id", reservation.getId())
                         .add("firstName", reservation.getFirstName())
@@ -64,70 +64,70 @@ public class JsonController implements Serializable {
                         .add("numDays", reservation.getNumDays())
                         .add("tripStart", reservation.getTripStartDate().toString());
                 reservationArray.add(reservationBuilder);
-                
+
             }
             builder.add("reservations", reservationArray);
             JsonObject result = builder.build();
-            try(JsonWriter writer = Json.createWriter(sw)){
+            try (JsonWriter writer = Json.createWriter(sw)) {
                 writer.writeObject(result);
             }
             getJsonStr().append(sw.toString());
             System.out.println(getJsonStr());
             writeToDisk("reservations.json", result);
-        } catch (IOException ex){
+        } catch (IOException ex) {
             System.out.println(ex);
         }
     }
-    
+
     /**
      * Utility method to write JSON to disk
+     *
      * @param fileName
-     * @param obj 
+     * @param obj
      */
-    public void writeToDisk(String fileName, JsonObject obj){
+    public void writeToDisk(String fileName, JsonObject obj) {
         try {
-        JsonWriter writer = Json.createWriter(new FileWriter(fileName));
-        writer.writeObject(obj);
-        writer.close();
-        } catch (IOException ex){
+            JsonWriter writer = Json.createWriter(new FileWriter(fileName));
+            writer.writeObject(obj);
+            writer.close();
+        } catch (IOException ex) {
             System.out.println(ex);
         }
     }
-    
-    public void parseJson(String fileName){
+
+    public void parseJson(String fileName) {
         try {
-        InputStream is = new FileInputStream(fileName);
-        JsonParser parser = Json.createParser(is);
-        
-        while(parser.hasNext()){
-            Event event = parser.next();
-            switch (event) {
-            case KEY_NAME:
-                parser.getString();
-                
-                break;
-            case VALUE_STRING:
-                // perform processing of String value
-                break;
-            case VALUE_NUMBER:
-                // perform processing of number value
-                break;
-            case VALUE_FALSE:
-                // perform processing of boolean
-                break;
-            case VALUE_TRUE:
-                // perform processing of boolean
-                break;
-            case VALUE_NULL:
-                // don't set anything
-                break;
-            default:
-                // we are not looking for other events
+            InputStream is = new FileInputStream(fileName);
+            JsonParser parser = Json.createParser(is);
+
+            while (parser.hasNext()) {
+                Event event = parser.next();
+                switch (event) {
+                    case KEY_NAME:
+                        parser.getString();
+
+                        break;
+                    case VALUE_STRING:
+                        // perform processing of String value
+                        break;
+                    case VALUE_NUMBER:
+                        // perform processing of number value
+                        break;
+                    case VALUE_FALSE:
+                        // perform processing of boolean
+                        break;
+                    case VALUE_TRUE:
+                        // perform processing of boolean
+                        break;
+                    case VALUE_NULL:
+                        // don't set anything
+                        break;
+                    default:
+                    // we are not looking for other events
+                }
             }
-        }
-        
-        
-        } catch (FileNotFoundException ex){
+
+        } catch (FileNotFoundException ex) {
             System.out.println(ex);
         }
     }
@@ -145,5 +145,7 @@ public class JsonController implements Serializable {
     public void setJsonStr(StringBuilder jsonStr) {
         this.jsonStr = jsonStr;
     }
+
     
+
 }

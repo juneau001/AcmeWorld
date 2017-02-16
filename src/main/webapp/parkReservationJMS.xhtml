@@ -43,9 +43,9 @@
                                        value="#{parkReservationController.reservation.numDays}"/>
 
                             <label for="startDate">Trip Start:</label>
-                            <p:calendar id="startDate" value="#{parkReservationController.reservation.tripStartDate}">
-                                <f:convertDateTime pattern="mm/dd/yyyy"/>
-                            </p:calendar>
+                            <p:inputText id="startDate" value="#{parkReservationController.reservation.tripStartDate}">
+                                <f:convertDateTime type="localDate" pattern="MM/dd/yyyy"/>
+                            </p:inputText>
 
                         </h:panelGrid>
 

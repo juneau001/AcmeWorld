@@ -3,6 +3,7 @@ package org.javaee7.entity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Date;
 import javax.enterprise.inject.Vetoed;
@@ -47,12 +48,12 @@ public class ParkReservation implements Serializable {
     @Column(name = "LAST_NAME")
     private String lastName;
     @NotNull(message="You must include a trip start date")
-    @Temporal(TemporalType.DATE)
+    
     @Column(name = "TRIP_START_DATE")
-    private Date tripStartDate;
-    @Temporal(TemporalType.DATE)
+    private LocalDate tripStartDate;
+ 
     @Column(name = "ENTER_DATE")
-    private Date enterDate;
+    private LocalDate enterDate;
     @Min(value=1, message="Your trip must include one adult")
     @Column(name = "NUM_ADULTS")
     private int numAdults;
@@ -187,28 +188,28 @@ public class ParkReservation implements Serializable {
     /**
      * @return the tripStartDate
      */
-    public Date getTripStartDate() {
+    public LocalDate getTripStartDate() {
         return tripStartDate;
     }
 
     /**
      * @param tripStartDate the tripStartDate to set
      */
-    public void setTripStartDate(Date tripStartDate) {
+    public void setTripStartDate(LocalDate tripStartDate) {
         this.tripStartDate = tripStartDate;
     }
 
     /**
      * @return the enterDate
      */
-    public Date getEnterDate() {
+    public LocalDate getEnterDate() {
         return enterDate;
     }
 
     /**
      * @param enterDate the enterDate to set
      */
-    public void setEnterDate(Date enterDate) {
+    public void setEnterDate(LocalDate enterDate) {
         this.enterDate = enterDate;
     }
 

@@ -13,7 +13,7 @@
             <ui:define name="content">
                 <f:view>
                     <h:form id="parkReservationForm">
-                        <p:dataTable id="currentReservations" var="reservation" 
+                        <p:dataTable id="currentReservations" var="reservation"  
                                      value="#{parkReservationController.currentReservations()}">
                           
                             <p:column headerText="Name">
@@ -30,8 +30,10 @@
                                 <h:outputText value="#{reservation.numAdults}"/>
                             </p:column>
                             <p:column headerText="# Children">
-
-                                <h:outputText value="#{reservation.numChild}"/>
+                                
+                                <h:outputText value="#{reservation.numChild}">
+                                   
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="# Days">
 
@@ -40,7 +42,7 @@
                             <p:column headerText="Vacation Start">
 
                                 <h:outputText value="#{reservation.tripStartDate}">
-                                    <f:convertDateTime pattern="MM-dd-YYYY"/>
+                                    <f:convertDateTime pattern="MM-dd-yyyy" type="localDate"/>
                                 </h:outputText>
                             </p:column>
                             

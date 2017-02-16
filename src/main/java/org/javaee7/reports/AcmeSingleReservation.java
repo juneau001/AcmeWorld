@@ -7,6 +7,10 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -53,8 +57,14 @@ public class AcmeSingleReservation implements Callable<ParkReservation>{
                 reservation.setLastName(rset.getString("last_name"));
                 reservation.setNumAdults(rset.getInt("num_adults"));
                 reservation.setNumChild(rset.getInt("num_child"));
-                reservation.setTripStartDate(rset.getDate("trip_start_date"));
-                reservation.setEnterDate(rset.getDate("enter_date"));
+                // Perform conversions to Java 8 Date-Time
+                Date tripStart = rset.getDate("trip_start_date");
+                Date enterDate = rset.getDate("enter_date");
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(tripStart);
+                reservation.setTripStartDate(LocalDate.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)));
+                cal.setTime(enterDate);
+                reservation.setEnterDate(LocalDate.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)));
             }
         } catch (SQLException ex){
             System.out.println("Exception: " + ex);

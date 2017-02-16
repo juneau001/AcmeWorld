@@ -3,6 +3,7 @@ package org.javaee7.jsf;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -21,6 +22,7 @@ import javax.enterprise.concurrent.ManagedScheduledExecutorService;
 import javax.enterprise.concurrent.ManagedTaskListener;
 import javax.enterprise.concurrent.ManagedThreadFactory;
 import javax.enterprise.context.SessionScoped;
+import javax.enterprise.event.Event;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
@@ -30,7 +32,10 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.javaee7.alerter.ReservationAlerter;
 import org.javaee7.concurrency.SkipSpecifiedTimeTrigger;
@@ -50,6 +55,7 @@ import org.javaee7.session.ParkFacade;
 import org.javaee7.session.ParkReservationFacade;
 import org.javaee7.session.ReservationBookingBean;
 import org.javaee7.session.ReservationScheduleFacade;
+import org.javaee7.tests.MessageLogger;
 
 /**
  *
@@ -78,6 +84,9 @@ public class ParkReservationController implements Serializable {
     
     @Inject
     MessageReceiver messageReceiver;
+    
+    @Inject
+    Event<MessageLogger> logEvent;
     
     @Resource(name = "concurrent/__defaultManagedExecutorService")
     ManagedExecutorService mes;
@@ -114,6 +123,8 @@ public class ParkReservationController implements Serializable {
     private Future longRunningParkReservationFuture;
     ManagedTaskListener mtListener;
     private ParkReservation longRunningReservation;
+    
+    private String messageBroadcast;
     
 
     /**
@@ -267,14 +278,16 @@ public class ParkReservationController implements Serializable {
      */
     //@NewLoggable
     public String createReservation(){
-
+        
+  //      logEvent.fireAsync(new MessageLogger("This is a test", Level.FINE));
+        
         if(reservation == null && reservation.getLastName()!= null){
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
                     "No Reservation made, please try again", "No Reservation made, please try again"));
         } else {
             System.out.println(reservation.getFirstName());
             reservation.setId(BigDecimal.valueOf(getReservationCount()).add(BigDecimal.ONE));
-            reservation.setEnterDate(new Date());
+            reservation.setEnterDate(LocalDate.now());
             ejbFacade.create(reservation);
             // Invoke JMS message sending within our MessageProducer bean
             messageProducer.sendMessageNew(reservation);
@@ -340,7 +353,7 @@ public class ParkReservationController implements Serializable {
                                     int     numberChildren,
                                     @Min(value=1)
                                     int     numberDays,
-                                    Date    tripStartDate){
+                                    LocalDate    tripStartDate){
         ParkReservation newReservation = new ParkReservation();
         newReservation.setFirstName(firstName);
         newReservation.setLastName(lastName);
@@ -348,7 +361,7 @@ public class ParkReservationController implements Serializable {
         newReservation.setNumChild(numberChildren);
         newReservation.setNumDays(numberDays);
         newReservation.setTripStartDate(tripStartDate);
-        newReservation.setEnterDate(new Date());
+        newReservation.setEnterDate(LocalDate.now());
         ejbFacade.create(newReservation);
         return "RESERVATION_CREATED";
     }
@@ -514,6 +527,15 @@ public class ParkReservationController implements Serializable {
             
         setReservationRestXml(res.readEntity(String.class));
     }
+    
+    public void broadcastMessage(){
+        Client client = ClientBuilder.newClient();
+        WebTarget target = client.target("http://localhost:8080/AcmeWorld/rest").path("sse");
+        Invocation.Builder invocationBuilder = target.request(MediaType.TEXT_PLAIN);
+        Response response = invocationBuilder.post(Entity.entity(messageBroadcast, MediaType.TEXT_PLAIN));
+        System.out.println(response.getStatus());
+        messageBroadcast = null;
+    }
 
     /**
      * @return the reservationRestXml
@@ -644,5 +666,12 @@ public class ParkReservationController implements Serializable {
         this.schedulerSkipTime = schedulerSkipTime;
     }
 
+    public String getMessageBroadcast(){
+        return this.messageBroadcast;
+    }
+    
+    public void setMessageBroadcast(String message){
+        this.messageBroadcast = message;
+    }
     
 }

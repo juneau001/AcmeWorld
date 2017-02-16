@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+
+   
+
+    <h:body>
+
+        <ui:composition template="/acmeWorldTemplate.xhtml">
+
+            <ui:define name="content">
+                <f:view>
+                    <h:form id="broadcastMessageForm">
+                        <h1>Broadcast Message</h1>
+                        <br/>
+                        <h:messages id="messages" infoStyle="color: green;" errorStyle="color: red;"/>
+                        <br/>
+                        <h:panelGrid columns="1">
+                            <label for="messageBroadcast">Message:</label>
+                            <p:inputTextarea id="messageBroadcast" cols="75" rows="20" value="#{parkReservationController.messageBroadcast}"/>
+
+
+                        </h:panelGrid>
+
+                      
+                        <br/>
+                        <p:panel header="Broadcast Message">
+                            <p:commandButton id="sendMessage"  action="#{parkReservationController.broadcastMessage()}"
+                                             value="Broadcast" update="messages, messageBroadcast">
+
+                            </p:commandButton>
+                        </p:panel>
+                    </h:form>
+
+
+                </f:view>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>
